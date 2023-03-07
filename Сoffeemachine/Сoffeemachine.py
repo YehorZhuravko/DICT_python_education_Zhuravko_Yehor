@@ -1,8 +1,9 @@
-from math import floor           ## округлил
-
-espresso = {"water": 250, "milk": 0, "beans": 16, "money": 4}
-latte = {"water": 350, "milk": 75, "beans": 20, "money": 7}
-capuccino = {"water": 200, "milk": 100, "beans": 12, "money": 6}
+# Початкові значення
+water = 400
+milk = 540
+coffee_beans = 120
+cups = 9
+money = 550
 
 
 class CoffeeMachine:
@@ -13,101 +14,96 @@ class CoffeeMachine:
         self.cups = cups
         self.money = money
 
+    # Виведення параметрів для функції remaining
     def print_state(self):
-        print("""
-        The coffee machine has:
-        {water} of water
-        {milk} of milk
-        {beans} of coffee beans
-        {cups} of disposable cups
-        {money} of money
-        """.format(water=self.water, milk=self.milk, beans=self.beans, cups=self.cups, money=self.money))
+        print(f"The coffee machine has:")
+        print(f"{water} of water")
+        print(f"{milk} of milk")
+        print(f"{coffee_beans} of coffee beans")
+        print(f"{cups} of disposable cups")
+        print(f"{money} of money")
 
-    def capacity(self, coffee):        ##проверил на тип кофе
-        flag = True
-        if self.cups < 1:
-            print("Not enough cups")
-            flag = False
-        if self.water < coffee.get("water"):
-            print("Not enough water")
-            flag = False
-        if self.milk < coffee.get("milk"):
-            print("Not enough milk")
-            flag = False
-        if self.beans < coffee.get("beans"):
-            print("Not enough beans")
-            flag = False
-        return flag
-
-    def buy(self):
-        menu = """
-        What do you want to buy?
-        1 - espresso
-        2 - latte
-        3 - capuccino
-        back – to main menu:
-        """
-        selection = input(menu)
-
-
-        if selection == "1":
-            if self.capacity(espresso):
-                self.serve(espresso)
-        elif selection == "2":
-            if self.capacity(latte):
-                self.serve(latte)
-        elif selection == "3":
-            if self.capacity(capuccino):
-                self.serve(capuccino)
-        elif selection == "back":
-            print("Going back to main menu")
+    # Перевірка заповнення кавомашини
+    def check_resources(self, water_needed, milk_needed, coffee_needed):
+        if water < water_needed:
+            return "water"
+        elif milk < milk_needed:
+            return "milk"
+        elif coffee_beans < coffee_needed:
+            return "coffee_beans"
+        elif cups < 1:
+            return "cups"
         else:
-            print("Wrong selection, try again")
+            return "enough"
 
-    def serve(self, coffee):
-        print("I have enough resources, making you a coffee!")
+    # Купівля кави для функції buy
+    def buy_coffee(self):
+        coffee_type = input("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, 4 - come back,: ")
+        if coffee_type == "4":
+            return
+        elif coffee_type not in ["1", "2", "3"]:
+            print("Invalid input.")
+            return
 
-        self.cups = self.cups - 1
-        self.money = self.money + coffee.get("money")
-        self.water = self.water - coffee.get("water")
-        self.milk = self.milk - coffee.get("milk")
-        self.beans = self.beans - coffee.get("beans")
+        if coffee_type == "1":
+            water_needed = 250
+            milk_needed = 0
+            coffee_needed = 16
+            cost = 4
+        elif coffee_type == "2":
+            water_needed = 350
+            milk_needed = 75
+            coffee_needed = 20
+            cost = 7
+        else:
+            water_needed = 200
+            milk_needed = 100
+            coffee_needed = 12
+            cost = 6
 
-    def fill(self):
-        water_added = int(input("Write how many ml of water do you want to add: "))
-        milk_added = int(input("Write how many ml of milk do you want to add: "))
-        beans_added = int(input("Write how many grams of coffee beans do you want to add: "))
-        cups_added = int(input("Write how many disposable cups of coffee do you want to add: "))
+        if self.check_resources(water_needed, milk_needed, coffee_needed) == "enough":
+            print("I have enough resources, making you a coffee!")
+            global water, milk, coffee_beans, cups, money
+            water -= water_needed
+            milk -= milk_needed
+            coffee_beans -= coffee_needed
+            cups -= 1
+            money += cost
+        else:
+            print(f"Sorry, not enough {self.check_resources(water_needed, milk_needed, coffee_needed)}!")
 
-        self.cups = self.cups + cups_added
-        self.water = self.water + water_added
-        self.milk = self.milk + milk_added
-        self.beans = self.beans + beans_added
+    # Функція fill для заповнення параметрів кавомашини
+    def refill_machine(self):
+        global water, milk, coffee_beans, cups
+        water += int(input("How many ml of water do you want to add: "))
+        milk += int(input("How many ml of milk do you want to add: "))
+        coffee_beans += int(input("How many grams of coffee beans do you want to add: "))
+        cups += int(input("How many disposable cups do you want to add: "))
 
-    def take(self):
-        print("I gave you {}".format(self.money))
-        self.money = 0
+    # Виведення грошей для функції take
+    def take_money(self):
+        global money
+        print(f"I gave you ${money}")
+        money = 0
 
 
+#Запуск кавомашини
 def machine():
-    coffee_machine = CoffeeMachine(400, 540, 120, 9, 550)
-
-    menu = "Write action (buy, fill, take, remaining, exit): "
-    action = input(menu)
-    while action != "exit":
+    coffee_machine = CoffeeMachine()
+    while True:
+        action = input("Write action (buy, fill, take, remaining, exit): ")
         if action == "buy":
-            coffee_machine.buy()
+            coffee_machine.buy_coffee()
         elif action == "fill":
-            coffee_machine.fill()
+            coffee_machine.refill_machine()
         elif action == "take":
-            coffee_machine.take()
+            coffee_machine.take_money()
         elif action == "remaining":
             coffee_machine.print_state()
+        elif action == "exit":
+            break
         else:
-            print("Incorrect selection")
-
-        menu = "Write action (buy, fill, take, remaining, exit): "
-        action = input(menu)
+            print("Invalid input.")
 
 
 machine()
